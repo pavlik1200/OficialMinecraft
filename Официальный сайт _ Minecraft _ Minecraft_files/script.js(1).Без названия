@@ -1,0 +1,38 @@
+"use strict";
+
+function setCookie(e, t, o, s, i, n) {
+    var a = e + "=" + encodeURIComponent(t) + (o ? "; expires=" + o.toGMTString() : "") + (s ? "; path=" + s : "") + (i ? "; domain=" + i : "") + (n ? "; secure" : "");
+    document.cookie = a;
+}
+
+function get_cookie(e) {
+    var t = document.cookie.match("(^|;) ?" + e + "=([^;]*)(;|$)");
+    return t ? unescape(t[2]) : null
+}
+
+$(document).ready(function () {
+    var o = $(".js-point-city").text();
+    $("#cities-modal .city").each(function (e, t) {
+        o === $(t).text() && $(t).css("font-weight", "500")
+    });
+
+    $(document).on("click", ".city", function () {
+        setCookie("GEO_CITY", $(this).data("city"), "", "/");
+	    setCookie("GEO_CITY", $(this).data("city"), "", "/", "mi-shop.com");
+        setCookie("GEO_S_CITY", $(this).data("id"), "", "/");
+        $(".js-point-city").text($(this).data("city"));
+        $(".js-point-city").attr('data-id', $(this).data("id"));
+
+        /** for retail rocket */
+        if ($('[data-stock-id]').length > 0) {
+            $('[data-stock-id]').attr('data-stock-id', $(this).data("id"));
+        }
+
+        $("#cities-modal").modal("hide");
+        document.location.reload(true);
+    });
+
+    if ($('[data-stock-id]').length > 0) {
+        $('[data-stock-id]').attr('data-stock-id', $(".js-point-city").data('id'));
+    }
+});

@@ -1,0 +1,20 @@
+$(document).ready(function() {
+    $('input[type=submit]').click(function() {
+        if ($('input[name=USER_NIKNAME]').length > 0) {
+            if (!$('input[name=USER_NIKNAME]').val()) {
+                $('.bx-auth-note').html('Пожалуйста, укажите ваш никнейм!');
+                $('input[name=USER_NIKNAME]').focus();
+                return false;
+            } else {
+                $.ajax({
+                    url : '/local/php_interface/include/ajax.SessionSet.php',
+                    method : 'POST',
+                    data : {
+                        'sessId'    : 'nickname',
+                        'sessValue' : $('input[name=USER_NIKNAME]').val()
+                    }
+                })
+            }
+        }
+    })
+});

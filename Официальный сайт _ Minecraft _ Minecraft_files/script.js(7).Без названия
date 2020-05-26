@@ -1,0 +1,5 @@
+$(document).ready(function () {
+  $('#auth-form-email, #auth-form-password').on('click', function () {
+    $('#auth-form-error').html('');
+  });
+});

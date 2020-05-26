@@ -1,0 +1,755 @@
+var advcake_int = {
+    domain: '.mi-shop.com',
+    url: '//hit.acstat.com/xiaomi/',
+    trackid: 'advcake_trackid',
+    partner: 'utm_campaign',
+    webmaster: 'utm_content',
+    advcake_params: "advcake_params",
+    advcake_test: "advcake_test",
+    init: function () { //Функция иницилизации, генерирует новый trackid для каждого нового utm_source. Сохраняет в куки пользователя trackid и последний url с utm_source
+        if (advcake_int.get_q('utm_source') != '') {
+            advcake_int.setCookie("advcake_last_utm", advcake_int.get_q('utm_source'), {
+                expires: 2678400, domain: advcake_int.domain, path: "/"
+            });
+            advcake_int.setCookie("advcake_url", location.href, {
+                expires: 2678400, domain: advcake_int.domain, path: "/"
+            });
+        }
+    },
+    get_uuai: function () { // Создает новый id пользователя или возвращает значение из куки
+        if (advcake_int.getCookie('user_unic_ac_id') === undefined) {
+            var user_unic_ac_id = advcake_int.guid();
+            advcake_int.setCookie("user_unic_ac_id", user_unic_ac_id, {
+                expires: 2678400, domain: advcake_int.domain, path: "/"
+            });
+        } else {
+            var user_unic_ac_id = advcake_int.getCookie('user_unic_ac_id');
+        }
+        return user_unic_ac_id;
+    },
+    guid: function () { //генерирует uuid
+        function s4() {
+            return Math.floor((1 + Math.random()) * 0x10000)
+                .toString(16)
+                .substring(1);
+        }
+
+        return s4() + s4() + '-' + s4() + '-' + s4() + '-' +
+            s4() + '-' + s4() + s4() + s4();
+    },
+    get_q: function (e) { //Функция возращающая значение из строки браузера(GET параметры)
+        var t = window.location.search;
+        return t = t.match(new RegExp(e + "=([^&=]+)")), t ? t[1] : ''
+    },
+    setCookie: function (e, t, n) { //функция создания кук
+        n = n || {};
+        var o = n.expires;
+        if ("number" == typeof o && o) {
+            var r = new Date;
+            r.setTime(r.getTime() + 1e3 * o), o = n.expires = r
+        }
+        o && o.toUTCString && (n.expires = o.toUTCString()), t = encodeURIComponent(t);
+        var i = e + "=" + t;
+        for (var a in n) {
+            i += "; " + a;
+            var c = n[a];
+            c !== !0 && (i += "=" + c)
+        }
+        document.cookie = i
+    },
+    getCookie: function (e) { // Функция получения значения из кук
+        var t = document.cookie.match(new RegExp("(?:^|; )" + e.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") + "=([^;]*)"));
+        return t ? decodeURIComponent(t[1]) : void 0
+    },
+    send: function () { // Отправка данных на сервера advcake
+        var user_unic_ac_id = advcake_int.get_uuai(); // id пользоватеоя
+        var referrer = document.referrer; // рефер
+        var hostname = location.href; // текущий url страницы
+        var webmaster_id_ac, campaign_ac, track_data_partner, track_id;
+
+        //Сессия дленной в 1 час
+        advcake_int.setCookie('advcake_session', '1', {
+            expires: 3600, domain: advcake_int.domain, path: "/"
+        });
+        // Запоминает в куки последние значения UTM меток или получает полсдение НАЧАЛО
+        if (advcake_int.get_q(advcake_int.webmaster) != '') {
+            advcake_int.setCookie('advcake_utm_content', advcake_int.get_q(advcake_int.webmaster), {
+                expires: 2678400, domain: advcake_int.domain, path: "/"
+            });
+            webmaster_id_ac = advcake_int.get_q(advcake_int.webmaster);
+        } else {
+            if (advcake_int.getCookie('advcake_utm_content') != undefined) {
+                webmaster_id_ac = advcake_int.getCookie("advcake_utm_content");
+            } else {
+                webmaster_id_ac = '';
+            }
+        }
+        if (advcake_int.get_q(advcake_int.partner) != '') {
+            advcake_int.setCookie('advcake_utm_campaign', advcake_int.get_q(advcake_int.partner), {
+                expires: 2678400, domain: advcake_int.domain, path: "/"
+            });
+            campaign_ac = advcake_int.get_q(advcake_int.partner);
+        } else {
+            if (advcake_int.getCookie('advcake_utm_campaign') != undefined) {
+                campaign_ac = advcake_int.getCookie("advcake_utm_campaign");
+            } else {
+                campaign_ac = '';
+            }
+        }
+        if (advcake_int.get_q('utm_source') != '') {
+            advcake_int.setCookie('advcake_utm_source', advcake_int.get_q('utm_source'), {
+                expires: 2678400, domain: advcake_int.domain, path: "/"
+            });
+        }
+        if (advcake_int.get_q(advcake_int.advcake_params) != '') {
+            advcake_int.setCookie('advcake_params', advcake_int.get_q(advcake_int.advcake_params), {
+                expires: 2678400, domain: advcake_int.domain, path: "/"
+            });
+            track_data_partner = advcake_int.get_q(advcake_int.advcake_params);
+        } else {
+            if (advcake_int.getCookie(advcake_int.advcake_params) != undefined) {
+                track_data_partner = advcake_int.getCookie(advcake_int.advcake_params);
+            } else {
+                track_data_partner = '';
+            }
+        }
+
+        if (advcake_int.getCookie(advcake_int.trackid) != undefined) {
+            track_id = advcake_int.getCookie(advcake_int.trackid);
+        } else if (typeof advcake_data != "undefined" && typeof advcake_data.advcake_trackid != "undefined") {
+            track_id = advcake_data.advcake_trackid;
+        } else {
+            track_id = '';
+        }
+
+        // Запоминает в куки последние значения UTM меток или получает полсдение КОНЕЦ
+        var track_type_ac = advcake_int.get_q("utm_medium");                  //Канал из строки браузера
+        var track_source_ac = advcake_int.get_q('utm_source');                   //Тут должен быть advcake, если наше
+        var track_iframe_param = (window === window.top) ? 0 : 1;             //Определяет открыта ли страница в Iframe
+        var track_iframe_top_href = '';
+        try {
+            track_iframe_top_href = window.top.location.href;
+        } catch (err) {
+        }
+        // Если мы не в фрейме, то URL родительского фрейма (т.е. самой страницы) нам не нужен -- экономим URL
+        if (track_iframe_param == 0) {
+            track_iframe_top_href = '';
+        }
+
+        var src = advcake_int.url
+            + '?sid=' + user_unic_ac_id // session_id
+            + '&t_tid=' + track_id // track_id
+            + '&t_dp=' + track_data_partner // track_data_partner
+            + '&wid=' + webmaster_id_ac // webmaster
+            + '&par=' + campaign_ac // partner
+            + '&ref=' + encodeURIComponent(referrer) // refer
+            + '&t_t=' + track_type_ac // track_type
+            + '&t_if=' + track_iframe_param // track_is_iframe
+            + '&t_s=' + track_source_ac // track_source
+            + '&ih=' + innerHeight // inner_height
+            + '&iw=' + innerWidth // inner_width
+            + '&if_p=' + encodeURIComponent(track_iframe_top_href) // iframe_parent_url
+            + '&s_w=' + screen.width
+            + '&s_h=' + screen.height
+            + '&land=' + encodeURIComponent(hostname); // url
+        (new Image()).src = src;        //Загружает изображение(передает данные на сервер), на сайте не отображается
+
+    }
+};
+advcake_int.init();
+
+(function () {
+    advcake_int.send();
+})();
+
+var advcake_dd = {
+    url: '//rtb.acstat.com/',
+    domain: '.mi-shop.com',
+    cookieTrackId: 'advcake_trackid',
+    cookieSessionId: 'user_unic_ac_id',
+    cookieLastUrl: 'advcake_last_url',
+    cookieDepth: 'advcake_depth',
+    send: function () {
+        var async = true;
+        var method = 'POST';
+        var XHR = ("onload" in new XMLHttpRequest()) ? XMLHttpRequest : XDomainRequest;
+        var xhr = new XHR();
+
+        if ("withCredentials" in xhr) {
+            try {
+                xhr.open(method, this.url, async)
+            } catch (x) {
+                return false;
+            }
+            xhr.send(this.prepareData(this.dataObject()));
+            xhr.onreadystatechange = function () {
+                if (4 === xhr.readyState) {
+                    return true;
+                } else {
+                    return false;
+                }
+            };
+            return;
+        }
+    },
+    prepareData: function (data) {
+        return JSON.stringify(data);
+    },
+    getQuery: function (e) { //Функция возращающая значение из строки браузера(GET параметры)
+        var t = window.location.search;
+        return t = t.match(new RegExp(e + "=([^&=]+)")), t ? t[1] : '';
+    },
+    getCookie: function (e) { // Функция получения значения из кук
+        var t = document.cookie.match(new RegExp("(?:^|; )" + e.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, "\\$1") + "=([^;]*)"));
+        return t ? decodeURIComponent(t[1]) : '';
+    },
+    setCookie: function (e, t, n) { //функция создания кук
+        n = n || {};
+        var o = n.expires;
+        if ("number" == typeof o && o) {
+            var r = new Date;
+            r.setTime(r.getTime() + 1e3 * o), o = n.expires = r
+        }
+        o && o.toUTCString && (n.expires = o.toUTCString()), t = encodeURIComponent(t);
+        var i = e + "=" + t;
+        for (var a in n) {
+            i += "; " + a;
+            var c = n[a];
+            c !== !0 && (i += "=" + c)
+        }
+        document.cookie = i
+    },
+    dataObject: function () {
+
+        var dataObject = {
+            page: 'none', // home, card, category, basket, order, typ, search, other
+        };
+
+        var last_url = window.location.href;
+        var utm_source = this.getQuery('utm_source');
+
+        if (utm_source.length > 0) {
+            this.setCookie(this.cookieLastUrl, last_url, {
+                expires: 2678400, domain: this.domain, path: "/"
+            });
+        } else {
+            last_url = this.getCookie(this.cookieLastUrl);
+        }
+
+        if (last_url.length > 0) {
+            dataObject.last_url = last_url
+        }
+        ;
+
+        var hostname = window.location.href;
+        var track_iframe_param = (window === window.top) ? 0 : 1;
+        var track_iframe_top_href = '';
+        try {
+            track_iframe_top_href = window.top.location.href;
+        } catch (err) {
+        }
+
+        if (track_iframe_param === 0 || track_iframe_top_href === hostname) {
+            track_iframe_top_href = '';
+        }
+
+        var depth = this.getCookie(this.cookieDepth);
+        if (depth.length > 0) {
+            depth = parseInt(depth);
+            depth++;
+        } else {
+            depth = 0;
+        }
+
+        this.setCookie(this.cookieDepth, depth, {
+            expires: 86400, domain: this.domain, path: "/"
+        });
+
+        dataObject.depth = depth;
+        dataObject.iframe = track_iframe_param;
+        dataObject.iframe_url = track_iframe_top_href;
+        dataObject.height = window.innerHeight;
+        dataObject.width = window.innerWidth;
+        dataObject.session_id = this.getCookie(this.cookieSessionId);
+        dataObject.track_id = this.getCookie(this.cookieTrackId);
+        dataObject.ref = document.referrer;
+
+        if (typeof (window.advcake_data) !== 'undefined') {
+
+            window.advcake_data.pageType = parseInt(window.advcake_data.pageType);
+
+            switch (window.advcake_data.pageType) {
+                case 1:
+                    dataObject.page = 'home';
+                    var basketProducts = this.getBasketProducts();
+                    if (basketProducts !== false) {
+                        dataObject.basket = basketProducts;
+                    }
+                    break;
+                case 2:
+                    dataObject.page = 'card';
+                    var product = this.getProduct();
+                    var basketProducts = this.getBasketProducts();
+                    var categoryId = this.getCategoryId();
+                    if (product !== false) {
+                        dataObject.product = product;
+                    }
+                    if (basketProducts !== false) {
+                        dataObject.basket = basketProducts;
+                    }
+                    if (categoryId !== false) {
+                        dataObject.category = categoryId;
+                    }
+                    break;
+                case 3:
+                    dataObject.page = 'category';
+                    var product = this.getProduct();
+                    var basketProducts = this.getBasketProducts();
+                    var categoryId = this.getCategoryId();
+                    var categoryList = this.getCategoryList();
+                    if (product !== false) {
+                        dataObject.product = product;
+                    }
+                    if (basketProducts !== false) {
+                        dataObject.basket = basketProducts;
+                    }
+                    if (categoryId !== false) {
+                        dataObject.category = categoryId;
+                    }
+                    if (categoryList !== false) {
+                        dataObject.listing = categoryList;
+                    }
+                    break;
+                case 4:
+                    dataObject.page = 'basket';
+                    var basketProducts = this.getBasketProducts();
+                    if (basketProducts !== false) {
+                        dataObject.basket = basketProducts;
+                    }
+                    break;
+                case 5:
+                    dataObject.page = 'order';
+                    var basketProducts = this.getBasketProducts();
+                    if (basketProducts !== false) {
+                        dataObject.basket = basketProducts;
+                    }
+                    break;
+                case 6:
+                    dataObject.page = 'typ';
+                    var basketProducts = this.getBasketProducts();
+                    var order = this.getOrder();
+                    if (basketProducts !== false) {
+                        dataObject.basket = basketProducts;
+                    }
+                    if (order !== false) {
+                        dataObject.order = order;
+                    }
+                    break;
+                default: // nothing
+                    dataObject.page = 'other';
+                    var product = this.getProduct();
+                    var basketProducts = this.getBasketProducts();
+                    var categoryId = this.getCategoryId();
+                    var categoryList = this.getCategoryList();
+                    if (product !== false) {
+                        dataObject.product = product;
+                    }
+                    if (basketProducts !== false) {
+                        dataObject.basket = basketProducts;
+                    }
+                    if (categoryId !== false) {
+                        dataObject.category = categoryId;
+                    }
+                    if (categoryList !== false) {
+                        dataObject.listing = categoryList;
+                    }
+                    break;
+            }
+        }
+
+        return dataObject;
+    },
+    getProduct: function () {
+        if (typeof (window.advcake_data) !== 'undefined' && typeof (window.advcake_data.currentProduct) !== 'undefined') {
+            var price = 0;
+            if (typeof (window.advcake_data.currentProduct.PRICE) !== 'undefined') {
+                price = window.advcake_data.currentProduct.PRICE;
+            }
+            return {
+                id: window.advcake_data.currentProduct.ID,
+                price: price
+            };
+        }
+        return false;
+    },
+    getBasketProducts: function () {
+        if (typeof (window.advcake_data) !== 'undefined' && typeof (window.advcake_data.basketProducts) !== 'undefined' && window.advcake_data.basketProducts.length > 0) {
+            var basketProducts = [];
+            var price = 0;
+            var quantity = 1;
+
+            window.advcake_data.basketProducts.forEach(function (product) {
+                price = 0;
+                quantity = 1;
+                if (typeof (product.price) !== 'undefined') {
+                    price = product.price;
+                }
+                if (typeof (product.quantity) !== 'undefined' && product.quantity > 1) {
+                    quantity = product.quantity;
+                }
+                basketProducts.push({
+                    id: product.id,
+                    price: price,
+                    quantity: quantity
+                });
+            });
+
+            return basketProducts;
+        }
+
+        return false;
+    },
+    getCategoryId: function () {
+        if (typeof (window.advcake_data) !== 'undefined' && typeof (window.advcake_data.currentCategory) !== 'undefined') {
+            return window.advcake_data.currentCategory.id;
+        }
+        return false;
+    },
+    getCategoryList: function () {
+        if (typeof (window.advcake_data) !== 'undefined' && typeof (window.advcake_data.products) !== 'undefined' && window.advcake_data.products.length > 0) {
+            var products = [];
+            var price = 0;
+
+            window.advcake_data.products.forEach(function (product) {
+                price = 0;
+                if (typeof (product.price) !== 'undefined') {
+                    price = product.price;
+                }
+                products.push({
+                    id: product.id,
+                    price: price
+                });
+            });
+
+            return products;
+        }
+        return false;
+    },
+    getOrder: function () {
+        if (typeof (window.advcake_data) !== 'undefined' && typeof (window.advcake_data.orderInfo) !== 'undefined') {
+            var id = '';
+            var totalPrice = 0;
+            if (typeof (window.advcake_data.orderInfo.id) !== 'undefined') {
+                id = window.advcake_data.orderInfo.id;
+            }
+            if (typeof (window.advcake_data.orderInfo.totalPrice) !== 'undefined') {
+                totalPrice = window.advcake_data.orderInfo.totalPrice;
+            }
+            return {
+                id: id,
+                price: totalPrice
+            };
+        }
+        return false;
+    }
+};
+
+window.advcake_data = window.advcake_data || [];
+window.advcake_data.push = function (data) {
+    if (typeof (data) !== 'undefined') {
+        data.pageType = parseInt(data.pageType);
+        try {
+            var src = 'https://gdeslon.ru/landing.js?mid=84715';
+            switch (parseInt(data.pageType)) {
+                case 1: // Main
+                    src += '&mode=main';
+                    break;
+                case 2: // Product Page
+                    src += '&mode=card&codes=' + data.currentProduct.id + ':' + data.currentProduct.price;
+                    break;
+                case 3: // Category
+                    if (data.products) {
+                        var list = data.products.slice(0, 5).map(function (prd) {
+                            return prd.id + ':' + (prd.price || 0);
+                        }).join(',');
+                    }
+                    src += '&mode=list&codes=' + (list || '') + '&cat_id=' + data.currentCategory.id;
+                    break;
+                case 4:
+                case 5: // Basket Page
+                    var basket = data.basketProducts.map(function (prd) {
+                        return Array(parseInt(prd.quantity)).fill(prd.id + ':' + prd.price).join(',');
+                    }).join(',');
+                    src += '&mode=basket&codes=' + basket;
+                    break;
+                case 6: // Thanks for order
+                    var basket = data.basketProducts.map(function (prd) {
+                        return Array(parseInt(prd.quantity)).fill(prd.id + ':' + prd.price).join(',');
+                    }).join(',');
+                    src += '&mode=thanks&codes=' + basket + '&order_id=' + data.orderInfo.id;
+                    break;
+                default: // Nothing
+                    src += '&mode=other';
+                    break;
+            }
+            var s = document.createElement('script');
+            s.setAttribute('src', src);
+            s.setAttribute('async', 'true');
+            s.setAttribute('type', 'text/javascript');
+            document.body.appendChild(s);
+        } catch (e) {}
+
+        //АПРТ
+        try {
+            switch (data.pageType) {
+                case 1: // Main
+                    window.APRT_DATA = {pageType: 1};
+                    break;
+                case 2: // Product Page
+                    window.APRT_DATA = {
+                        pageType: 2,
+                        currentProduct: data.currentProduct,
+                        currentCategory: data.currentCategory
+                    };
+                    break;
+                case 3: //Catalog Page
+                    window.APRT_DATA = {pageType: 3, currentCategory: data.currentCategory};
+                    break;
+                case 4: //Basket Page
+                    window.APRT_DATA = {pageType: 4, basketProducts: data.basketProducts};
+                    break;
+                case 5: //Order Page
+                    window.APRT_DATA = {pageType: 5, basketProducts: data.basketProducts};
+                    break;
+                case 6: //Thanks for order
+                    window.APRT_DATA = {
+                        pageType: 6,
+                        purchasedProducts: data.basketProducts,
+                        orderInfo: data.orderInfo
+                    };
+                    break;
+                default: // nothing
+                    window.APRT_DATA = {pageType: 0};
+                    break;
+            }
+            (function (w, d) {
+                try {
+                    var el = 'getElementsByTagName', rs = 'readyState';
+                    if (d[rs] !== 'interactive' && d[rs] !== 'complete') {
+                        var c = arguments.callee;
+                        return setTimeout(function () {
+                            c(w, d)
+                        }, 100);
+                    }
+                    var s = d.createElement('script');
+                    s.type = 'text/javascript';
+                    s.async = s.defer = true;
+                    s.src = '//aprtx.com/code/mi-shop/';
+                    var p = d[el]('body')[0] || d[el]('head')[0];
+                    if (p) p.appendChild(s);
+                } catch (x) {
+                    if (w.console) w.console.log(x);
+                }
+            })(window, document);
+        } catch (e) {
+        }
+
+        //Cityads
+        try {
+            switch (data.pageType) {
+                case 2: //Product Page
+                    window.xcnt_product_id = window.advcake_data.currentProduct.ID;
+                    break;
+                case 4: //Basket Page
+                    var bskt = '';
+                    window.advcake_data.basketProducts.forEach(function (d) {
+                        bskt += ',' + d.id;
+                    });
+                    var bskt = bskt.substring(1);
+                    window.xcnt_basket_products = bskt;
+                    break;
+                case 6: //Thanks for order
+                    var bskt = '';
+                    window.advcake_data.basketProducts.forEach(function (d) {
+                        bskt += ',' + d.id;
+                    });
+                    var bskt = bskt.substring(1);
+                    window.xcnt_order_products = bskt;
+                    window.xcnt_order_id = window.advcake_data.orderInfo.id;
+                    window.xcnt_order_total = window.advcake_data.orderInfo.totalPrice;
+                    break;
+                default: // nothing
+                    break;
+            }
+
+            (function (d) {
+                var s = document.createElement('script');
+                var src = '//x.cnt.my/async/track/?r=' + Math.random();
+                s.setAttribute('src', src);
+                s.setAttribute('async', 'true');
+                s.setAttribute('type', 'text/javascript');
+                document.body.appendChild(s);
+            })(document);
+        }
+        catch (e) {
+        }
+
+        //Admitad
+        try {
+            switch (data.pageType) {
+                case 1: // Main
+                    window._retag = window._retag || [];
+                    window._retag.push({code: "9ce8887efe", level: 0});
+                    break;
+                case 2: // Product Page
+                    window.ad_product = {
+                        "id": data.currentProduct.ID
+                    };
+                    window._retag = window._retag || [];
+                    window._retag.push({code: "9ce8887ee0", level: 2});
+                    break;
+                case 3: // Catalog Page
+                    window.ad_category = data.currentCategory.ID;
+                    window._retag = window._retag || [];
+                    window._retag.push({code: "9ce8887ee1", level: 1});
+                    break;
+                case 4: // Basket Page
+                    window.ad_products = data.basketProducts.map(function (item) {
+                        return {id: item.id, number: item.quantity};
+                    });
+                    window._retag = window._retag || [];
+                    window._retag.push({code: "9ce8887ee3", level: 3});
+                    break;
+                case 6: // Thanks for order
+                    var orderId = 0;
+                    var totalPrice = 0;
+                    if (typeof (data.orderInfo) !== 'undefined') {
+                        orderId = data.orderInfo.id;
+                        totalPrice = data.orderInfo.totalPrice;
+                    }
+                    window.ad_order = orderId;
+                    window.ad_amount = totalPrice;
+                    window.ad_products = advcake_data.basketProducts.map(function (item) {
+                        return {id: item.id, number: item.quantity};
+                    });
+                    window._retag = window._retag || [];
+                    window._retag.push({code: "9ce8887ee2", level: 4});
+                    break;
+                default: // Nothing
+                    break;
+            }
+            (function () {
+                var id = "admitad-retag";
+                if (document.getElementById(id)) {
+                    return;
+                }
+                var s = document.createElement("script");
+                s.async = true;
+                s.id = id;
+                var r = (new Date).getDate();
+                s.src = (document.location.protocol == "https:" ? "https:" : "http:") + "//cdn.lenmit.com/static/js/retag.min.js?r=" + r;
+                var a = document.getElementsByTagName("script")[0];
+                a.parentNode.insertBefore(s, a);
+            })();
+        }
+        catch (e) {
+        }
+    }
+
+
+};
+if (typeof window.advcake_data === 'object' && typeof window.advcake_data.forEach !== 'undefined') {
+    window.advcake_data.forEach(function (data) {
+        if (typeof data === 'object') {
+            window.advcake_data.push(data);
+        }
+    });
+}
+
+//Rocket10
+(function () {
+    var script = document.createElement("script");
+    script.src = "https://rockcnt.com/cnt/" + Math.floor(Math.random() * 1000000);
+    script.setAttribute("defer", "defer");
+    document.getElementsByTagName("body")[0].appendChild(script);
+})();
+
+/*!
+ * kick_sovetnik
+ * Mon Jan 30 2017 02:07:35
+ * https://github.com/SerjoPepper/kick_sovetnik#readme
+ */
+!function () {
+    function e(e) {
+        Array.prototype.slice.call(e).forEach(function (e) {
+            "DIV" === e.tagName && e.querySelector('[href*="sovetnik"]') && function (e) {
+                setTimeout(function () {
+                    var n = function () {
+                        t("#" + e.id, {"pointer-events": "none"}), e.removeEventListener("mouseover", n, !0), e.removeEventListener("mouseenter", n, !0)
+                    };
+                    e.addEventListener("mouseover", n, !0), e.addEventListener("mouseenter", n, !0)
+                }, 3e3), t("#" + e.id, {
+                    background: "transparent",
+                    transition: "none",
+                    "box-shadow": "none",
+                    "border-color": "transparent"
+                }), t("#" + e.id + " *", {opacity: "0", "pointer-events": "none"});
+                var n = new MutationObserver(function () {
+                    var e = document.documentElement.style.marginTop;
+                    e && 0 !== parseInt(e, 10) && (document.documentElement.style.marginTop = "")
+                });
+                setTimeout(function () {
+                    n.disconnect(), n = null
+                }, 5e3), n.observe(document.documentElement, {
+                    attributes: !0,
+                    attributeFilter: ["style"]
+                }), document.documentElement.style.marginTop = ""
+            }(e)
+        })
+    }
+
+    function t(e, t) {
+        var n = function (e, t) {
+            var n = document.createElement("style"), o = "";
+            for (var r in t) t.hasOwnProperty(r) && (o += r + ":" + t[r] + " !important;\n");
+            return n.type = "text/css", n.appendChild(document.createTextNode(e + ", " + e + ":hover{" + o + "}")), n
+        }(e, t);
+        document.body.appendChild(n)
+    }
+
+    var n;
+    "addEventListener" in document && document.addEventListener("DOMNodeInserted", function (e) {
+        if (void 0 !== e.target.innerHTML && -1 != e.target.innerHTML.indexOf("Советник")) {
+            var t = document.getElementById(e.target.id);
+            t.innerHTML = "&nbsp;", t.style = "display:none!important", setTimeout(function () {
+                document.getElementsByTagName("html")[0].style = ""
+            }, 310)
+        }
+    }, !1);
+    try {
+        (function () {
+            try {
+                n = new MutationObserver(function (t) {
+                    t.forEach(function (t) {
+                        var n = t.addedNodes;
+                        n && n.length && e(n)
+                    })
+                })
+            } catch (e) {
+            }
+            document.body && e(document.body.children)
+        })(), function e() {
+            return document.body ? void (n && n.observe(document.body, {childList: !0})) : void setTimeout(e, 200)
+        }(), window.addEventListener("message", function (e) {
+            var t;
+            if ("string" == typeof e.data) try {
+                t = JSON.parse(e.data)
+            } catch (e) {
+                return
+            } else t = e.data;
+            t && "MBR_ENVIRONMENT" === t.type && (e.stopImmediatePropagation(), e.stopPropagation(), e.data = {})
+        }, !0)
+    } catch (e) {
+        "undefined" != typeof console && console.error("error while kick sovetnik", e)
+    }
+}();
